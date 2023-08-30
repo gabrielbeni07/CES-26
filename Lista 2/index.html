@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  body {
+    margin: 0;
+    overflow: hidden;
+  }
+  canvas {
+    display: block;
+  }
+</style>
+</head>
+<body>
+<canvas id="myCanvas"></canvas>
+<div style="position: absolute; top: 10px; left: 10px;">
+  <button id="soundToggle">Mute Sound</button>
+</div>
+<audio id="explosionSound">
+  <source src="som.mp3" type="audio/mpeg">
+</audio>
+<img id="explosionImage" src="Explosao.png" style="position: absolute; display: none;">
+<script>
+  const canvas = document.getElementById('myCanvas');
+  const ctx = canvas.getContext('2d');
+  
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  
+  const planeImage = new Image();
+  planeImage.src = 'Aviao.jpeg'; // Insira o link da imagem do avião
+
+  const missileImage = new Image();
+  missileImage.src = 'Missil.png';
+  
+  const explosionImage = new Image();
+  explosionImage.src = 'Explosao.png';
+  
+  const plane = {
+    x: canvas.width / 2,
+    y: canvas.height / 3,
+    width: 100,
+    height: 100
+  };
+
+  const missile = {
+    x: canvas.width / 2,
+    y: canvas.height / 2,
+    width: 75,
+    height: 75,
+    speed: 8,  // Velocidade do míssil
+    angle: 0,  // Ângulo inicial do míssil apontando para o avião
+    initialX: canvas.width / 2,
+    initialY: canvas.height / 2
+  };
+
+  let missileFired = false;
+  let soundsEnabled = true;
+  
+  const soundToggle = document.getElementById('soundToggle');
+  soundToggle.addEventListener('click', toggleSound);
+  
+  function toggleSound() {
+    soundsEnabled = !soundsEnabled;
+    soundToggle.textContent = soundsEnabled ? 'Mute Sound' : 'Unmute Sound';
+  }
+  
+  function resetElements() {
+    missileFired = false;
+    plane.x = canvas.width / 2;
+    plane.y = canvas.height / 3;
+    missile.x = missile.initialX;
+    missile.y = missile.initialY;
+  }
+  
+  canvas.addEventListener('mousemove', (event) => {
+    plane.x = event.clientX;
+    plane.y = event.clientY;
+
+    if (!missileFired) {
+      updateMissilePosition();
+    }
+  });
+
+  canvas.addEventListener('contextmenu', (event) => {
+    event.preventDefault(); // Impede o menu de contexto padrão
+    if (!missileFired) {
+      missileFired = true;
+    }
+  });
+
+  function updateMissilePosition() {
+    const dx = plane.x - missile.x;
+    const dy = plane.y - missile.y;
+    missile.angle = Math.PI/2 + Math.atan2(dy, dx);
+  }
+  
+  function checkCollision() {
+    const dx = plane.x - missile.x;
+    const dy = plane.y - missile.y;
+    const distanceToPlane = Math.sqrt(dx * dx + dy * dy);
+    
+    if (distanceToPlane < missile.width) {
+      return true;
+    }
+    
+    return false;
+  }
+  
+  function explode() {
+    if (soundsEnabled) {
+      const explosionSound = document.getElementById('explosionSound');
+      explosionSound.currentTime = 0;
+      explosionSound.play();
+    }
+
+    const explosionImage = document.getElementById('explosionImage');
+    explosionImage.style.left = (plane.x - plane.width / 2) + 'px';
+    explosionImage.style.top = (plane.y - plane.height / 2) + 'px';
+    explosionImage.style.width = plane.width + 'px';
+    explosionImage.style.height = plane.height + 'px';
+    explosionImage.style.display = 'block';
+    
+    setTimeout(() => {
+      explosionImage.style.display = 'none';
+      resetElements();
+    }, 200); // Oculta a imagem de explosão após 1 segundo
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    updateMissilePosition();
+
+    if (!missileFired) {
+      ctx.save();
+      ctx.translate(missile.x, missile.y);
+      ctx.rotate(missile.angle);
+      ctx.drawImage(missileImage, -missile.width / 2, -missile.height / 2, missile.width, missile.height);
+      ctx.restore();
+    }
+
+    if (missileFired) {
+      const dx = plane.x - missile.x;
+      const dy = plane.y - missile.y;
+
+      const distanceToPlane = Math.sqrt(dx * dx + dy * dy);
+
+      if (distanceToPlane > missile.speed) {
+        missile.x += (dx / distanceToPlane) * missile.speed;
+        missile.y += (dy / distanceToPlane) * missile.speed;
+      } else {
+        if (checkCollision()) {
+          explode();
+        }
+      }
+      
+      ctx.save();
+      ctx.translate(missile.x, missile.y);
+      ctx.rotate(Math.PI/2 + Math.atan2(dy, dx));
+      ctx.drawImage(missileImage, -missile.width / 2, -missile.height / 2, missile.width, missile.height);
+      ctx.restore();
+    }
+
+    ctx.drawImage(explosionImage, plane.x - plane.width / 2, plane.y - plane.height / 2, plane.width, plane.height);
+    ctx.drawImage(planeImage, plane.x - plane.width / 2, plane.y - plane.height / 2, plane.width, plane.height);
+
+    requestAnimationFrame(animate);
+  }
+
+  planeImage.onload = function() {
+    missileImage.onload = function() {
+      animate();
+    };
+  };
+
+</script>
+</body>
+</html>
