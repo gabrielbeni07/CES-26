@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor de Árvore DOM </title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        .selected {
+            background-color: blue;
+        }
+    </style>
+</head>
+<body>
+    <h1>Editor de Árvore DOM</h1>
+    <div id="editor">
+        <button id="add">Adicionar Elemento</button>
+        <button id="remove">Remover Elemento</button>
+        <button id="change">Alterar Propriedades</button>
+        <button id="clear">Limpar Seleção</button>
+    </div>
+    <div id="tree">
+        <!-- Árvore DOM de exemplo -->
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            // Função para selecionar um elemento
+            $('#tree').on('click', '.node', function () {
+                // Limpa a seleção anterior
+                $('#tree .node').removeClass('selected');
+                // Seleciona o elemento clicado
+                $(this).addClass('selected');
+            });
+
+            // Função para adicionar um novo elemento filho
+            $('#add').click(function () {
+                const selectedElement = $('#tree .selected');
+                if (selectedElement.length > 0) {
+                    const newElement = $('<div class="node">Novo Elemento</div>');
+                    selectedElement.append(newElement);
+                } else {
+                    alert('Selecione um elemento antes de adicionar um filho.');
+                }
+            });
+
+            // Função para remover o elemento selecionado e seus filhos
+            $('#remove').click(function () {
+                const selectedElement = $('#tree .selected');
+                if (selectedElement.length > 0) {
+                    selectedElement.remove();
+                } else {
+                    alert('Selecione um elemento antes de removê-lo.');
+                }
+            });
+
+            // Função para alterar propriedades do elemento selecionado
+            $('#change').click(function () {
+                const selectedElement = $('#tree .selected');
+                if (selectedElement.length > 0) {
+                    const newText = prompt('Digite o novo texto para o elemento:', selectedElement.text());
+                    if (newText !== null) {
+                        selectedElement.text(newText);
+                    }
+                } else {
+                    alert('Selecione um elemento antes de alterar suas propriedades.');
+                }
+            });
+
+            // Função para limpar a seleção
+            $('#clear').click(function () {
+                $('#tree .node').removeClass('selected');
+            });
+        });
+    </script>
+</body>
+</html>
