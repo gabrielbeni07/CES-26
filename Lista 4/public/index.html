@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minha Aplicação</title>
+</head>
+<body>
+
+<!-- Botão para carregar dados via AJAX -->
+<button onclick="loadData()">Carregar Dados</button>
+
+<!-- Parágrafo onde os dados serão exibidos -->
+<p id="data"></p>
+
+<script>
+    function loadData() {
+        fetch('/dados')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('data').innerText = `Nome: ${data.nome}, Idade: ${data.idade}`;
+            });
+    }
+</script>
+
+</body>
+</html>
